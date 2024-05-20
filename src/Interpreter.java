@@ -19,12 +19,16 @@ public class Interpreter {
         interpreter.execute(program3);
 
         String program4 = "z = x + y;";
-        System.out.println("Test 4: forcing an error with uninitialized variables");
+        System.out.println("Test 4: forcing an error with uninitialized variables. Should say 'Uninitialized Variable: x at the bottom' of all the running code");
         interpreter.execute(program4);
 
-        String program5 = "d = (2 + 3) + 2 * 3;";
-        System.out.println("Test 5: Parenthesis testing. It should add to 5, then add 5 to 6, for 11");
+        String program5 = "d = (2 + 3) * (3 + 5) * 2 * 2 + 3;";
+        System.out.println("Test 5: Parenthesis testing. It should do parenthesis first. So Add 2 and 3, then 3 and 5, then multiply 5 with 8 then 2 and 2 then add 3. so 163);");
         interpreter.execute(program5);
+
+        String program6 = "x = 001;";
+        System.out.println("Test 6: This should give me an error that says we cannot initialize leading 0's");
+        interpreter.execute(program6);
     }
     private Map<String, Integer> variables = new HashMap<>(); // This is where I am going to hold the variable names and integer values.
     private Set<String> initializedString = new HashSet<>(); // This is where I will store and keep track of initialized string variables.
@@ -42,14 +46,14 @@ public class Interpreter {
 
         private void tokenize(String program) throws SyntaxError {
             String tokenTypes =
-                    "(?<Numbers>0|[1-9]\\d*)|" + // Finding our Numbers. This **should** not count a number with leading zeros, unless it is 0 alone.
-                            "(?<Identifiers>[a-zA-Z_]\\w*)|" + // Finding our Identifiers.
+                    "(?<Numbers>[0-9]\\d*)|" + // Finding our Numbers. This **should** not count a number with leading zeros, unless it is 0 alone.
+                            "(?<Identifier>[a-zA-Z_]\\w*)|" + // Finding our Identifier.
                             "(?<Assignment>=)|" + // Equal is our assignment operator.
                             "(?<Plus>\\+)|" + // The plus sign is our addition operator.
                             "(?<Minus>-)|" +// The minus sign is our minus operator.
                             "(?<Multiplication>\\*)|" +
-                            "(?<LeftParanthesis>\\()|" +
-                            "(?<RightParanthesis>\\))|" +
+                            "(?<LeftParenthesis>\\()|" +
+                            "(?<RightParenthesis>\\))|" +
                             "(?<Semicolon>;)"; // Semicolon to end.
             Pattern tokenPattern = Pattern.compile(tokenTypes); // This is what will compile the regular expression pattern.
             Matcher match = tokenPattern.matcher(program); // Matches the compiled tokenPattern to find the tokens in the input string "Program"
@@ -61,8 +65,8 @@ public class Interpreter {
                         throw new SyntaxError("Invalid Number: " + number);
                     }
                     tokens.add(new Tokens("Number", number));
-                } else if (match.group("Identifiers") != null) {
-                    tokens.add(new Tokens("Identifiers", match.group("Identifiers")));
+                } else if (match.group("Identifier") != null) {
+                    tokens.add(new Tokens("Identifier", match.group("Identifier")));
                 } else if (match.group("Assignment") != null) {
                     tokens.add(new Tokens("Assignment", match.group("Assignment")));
                 } else if (match.group("Plus") != null) {
@@ -71,10 +75,10 @@ public class Interpreter {
                     tokens.add(new Tokens("Minus", match.group("Minus")));
                 } else if (match.group("Multiplication") != null) {
                     tokens.add(new Tokens("Multiplication", match.group("Multiplication")));
-                } else if (match.group("LeftParanthesis") != null) {
-                    tokens.add(new Tokens("LeftParanthesis", match.group("LeftParanthesis")));
-                } else if (match.group("RightParanthesis") != null) {
-                    tokens.add(new Tokens("RightParanthesis", match.group("RightParanthesis")));
+                } else if (match.group("LeftParenthesis") != null) {
+                    tokens.add(new Tokens("LeftParenthesis", match.group("LeftParenthesis")));
+                } else if (match.group("RightParenthesis") != null) {
+                    tokens.add(new Tokens("RightParenthesis", match.group("RightParenthesis")));
                 } else if (match.group("Semicolon") != null) {
                     tokens.add(new Tokens("Semicolon", match.group("Semicolon")));
                 }
@@ -91,7 +95,7 @@ public class Interpreter {
             }
 
             private void assignment () throws SyntaxError {
-                if (pos >= tokens.size() || !tokens.get(pos).type.equals("Identifiers")) {
+                if (pos >= tokens.size() || !tokens.get(pos).type.equals("Identifier")) {
                     error("Expected identifier");
                 }
                 String varName = tokens.get(pos).value;
@@ -143,17 +147,20 @@ public class Interpreter {
                     pos++;
                 }
                 int result;
+                if (pos >= tokens.size()){
+                    error("Unexpected end of expression");
+                }
                 if (tokens.get(pos).type.equals("LeftParenthesis")) {
                     pos++;
-                    result = midExpression();
-                    if (!tokens.get(pos).type.equals("RightParenthesis")) {
+                    result = lowExpression();
+                    if (pos >= tokens.size() || !tokens.get(pos).type.equals("RightParenthesis")) {
                         error("Expected ')' ");
                     }
                     pos++;
                 } else if (tokens.get(pos).type.equals("Number")) {
                     result = Integer.parseInt(tokens.get(pos).value);
                     pos++;
-                } else if (tokens.get(pos).type.equals("Identifiers")) {
+                } else if (tokens.get(pos).type.equals("Identifier")) {
                     String varName = tokens.get(pos).value;
                     pos++;
                     if (!initializedString.contains(varName)) {

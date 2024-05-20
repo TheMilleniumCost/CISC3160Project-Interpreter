@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="20c2d699-1e73-40a9-8bb8-7c6fed6ae5f8" name="Changes" comment="Added some more methods, different order of operations with low/mid/high expressions. Though not working just yet. Going to be testing basic operations first. need to set up paranthetical operations next.">
+    <list default="true" id="20c2d699-1e73-40a9-8bb8-7c6fed6ae5f8" name="Changes" comment="Alrighty. I was able to get a good portion working now. I can do  Simple Assignments, Arithmetic Operations, Variable Initialization, and the error catches for uninitialized variables. Need to fix program5. Not sure as to the issue yet but will figure it out.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Interpreter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Interpreter.java" afterDir="false" />
     </list>
@@ -52,7 +52,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1716168861547</updated>
-      <workItem from="1716168862704" duration="6123000" />
+      <workItem from="1716168862704" duration="9133000" />
     </task>
     <task id="LOCAL-00001" summary="Just starting off. Built the logic for some error handling, tokenizing, matching tokens and all. Need to build parsing. Should be done all tonight.">
       <created>1716169832575</created>
@@ -68,7 +68,14 @@
       <option name="project" value="LOCAL" />
       <updated>1716173978791</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Alrighty. I was able to get a good portion working now. I can do  Simple Assignments, Arithmetic Operations, Variable Initialization, and the error catches for uninitialized variables. Need to fix program5. Not sure as to the issue yet but will figure it out.">
+      <created>1716176371501</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1716176371501</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -100,6 +107,15 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Just starting off. Built the logic for some error handling, tokenizing, matching tokens and all. Need to build parsing. Should be done all tonight." />
     <MESSAGE value="Added some more methods, different order of operations with low/mid/high expressions. Though not working just yet. Going to be testing basic operations first. need to set up paranthetical operations next." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added some more methods, different order of operations with low/mid/high expressions. Though not working just yet. Going to be testing basic operations first. need to set up paranthetical operations next." />
+    <MESSAGE value="Alrighty. I was able to get a good portion working now. I can do  Simple Assignments, Arithmetic Operations, Variable Initialization, and the error catches for uninitialized variables. Need to fix program5. Not sure as to the issue yet but will figure it out." />
+    <option name="LAST_COMMIT_MESSAGE" value="Alrighty. I was able to get a good portion working now. I can do  Simple Assignments, Arithmetic Operations, Variable Initialization, and the error catches for uninitialized variables. Need to fix program5. Not sure as to the issue yet but will figure it out." />
+  </component>
+  <component name="XDebuggerManager">
+    <watches-manager>
+      <configuration name="Application">
+        <watch expression="tokens" />
+        <watch expression="program6" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>
