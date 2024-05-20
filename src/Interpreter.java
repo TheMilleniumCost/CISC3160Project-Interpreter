@@ -4,7 +4,27 @@ import java.util.regex.*; // Need regular expressions for the code.
 
 public class Interpreter {
     public static void main(String[] args) {
+        Interpreter interpreter = new Interpreter();
+        //Testing really quick with some simple statements.
+        String program1 = "x = 10;";
+        System.out.println("Test 1: Simple Assignment");
+        interpreter.execute(program1);
 
+        String program2 = "y = 5 + 3 * 2;";
+        System.out.println("Test 2: Arithmetic Operation. Should output 11");
+        interpreter.execute(program2);
+
+        String program3 = "x = 2; y = 4; z = x + y;";
+        System.out.println("Test 3: Variable Usage");
+        interpreter.execute(program3);
+
+        String program4 = "z = x + y;";
+        System.out.println("Test 4: forcing an error with uninitialized variables");
+        interpreter.execute(program4);
+
+        String program5 = "d = (2 + 3) + 2 * 3;";
+        System.out.println("Test 5: Parenthesis testing. It should add to 5, then add 5 to 6, for 11");
+        interpreter.execute(program5);
     }
     private Map<String, Integer> variables = new HashMap<>(); // This is where I am going to hold the variable names and integer values.
     private Set<String> initializedString = new HashSet<>(); // This is where I will store and keep track of initialized string variables.
@@ -21,113 +41,154 @@ public class Interpreter {
         }
 
         private void tokenize(String program) throws SyntaxError {
-        String tokenTypes =
-                "(?<Numbers>0|[1-9]\\d*)|"+ // Finding our Numbers. This **should** not count a number with leading zeros, unless it is 0 alone.
-                "(?<Identifiers>[a-zA-Z_]\\w*)|"+ // Finding our Identifiers.
-                        "(?<Assignment>=)|"+ // Equal is our assignment operator.
-                        "(?<Plus>\\+)|"+ // The plus sign is our addition operator.
-                        "(?<Minus>-)|"+// The minus sign is our minus operator.
-                        "(?<Multiplication>\\*)|"+
-                        "(?<Semicolon>;)|"; // Semicolon to end.
-        Pattern tokenPattern = Pattern.compile(tokenTypes); // This is what will compile the regular expression pattern.
-        Matcher match = tokenPattern.matcher(program); // Matches the compiled tokenPattern to find the tokens in the input string "Program"
+            String tokenTypes =
+                    "(?<Numbers>0|[1-9]\\d*)|" + // Finding our Numbers. This **should** not count a number with leading zeros, unless it is 0 alone.
+                            "(?<Identifiers>[a-zA-Z_]\\w*)|" + // Finding our Identifiers.
+                            "(?<Assignment>=)|" + // Equal is our assignment operator.
+                            "(?<Plus>\\+)|" + // The plus sign is our addition operator.
+                            "(?<Minus>-)|" +// The minus sign is our minus operator.
+                            "(?<Multiplication>\\*)|" +
+                            "(?<LeftParanthesis>\\()|" +
+                            "(?<RightParanthesis>\\))|" +
+                            "(?<Semicolon>;)"; // Semicolon to end.
+            Pattern tokenPattern = Pattern.compile(tokenTypes); // This is what will compile the regular expression pattern.
+            Matcher match = tokenPattern.matcher(program); // Matches the compiled tokenPattern to find the tokens in the input string "Program"
 
-        while (match.find()) { // Iterate over every match found in the input string.
-            if (match.group("Numbers") != null){ // If you iterate and find a match to our Numbers group, we'll add it as a Tokens object to the tokens list.
-                String number = match.group("Numbers");
-                if (number.startsWith("0")&& number.length()>1){
-                    throw new SyntaxError("Invalid Number: " + number);
-                }
-                tokens.add(new Tokens("Number", number));
-            }
-        }
-        }
-
-        // Going to make a Parser.
-
-        private void parse(String program) throws SyntaxError {
-            tokenize(program);
-            pos = 0;
-            while (pos < tokens.size()) {
-                assignment();
-            }
-        }
-
-        private void assignment() throws SyntaxError {
-            if(!tokens.get(pos).type.equals("Identifiers")){
-                error("Expected identifier");
-            }
-            String varName = tokens.get(pos).value;
-            pos++;
-            if(!tokens.get(pos).type.equals("Assign")) {
-                error("Expected '='");
-            }
-            pos++;
-            int value = lowExpression();
-            if (!tokens.get(pos).type.equals("Semicolon")){
-                error("Expected ';'");
-            }
-            pos++;
-            variables.put(varName,value);
-            initializedString.add(varName);
-        }
-
-        private int lowExpression() throws SyntaxError { // Handle the lowest precedence operations. So Adding and Subtracting.
-        int result = midExpression();
-        while (pos< tokens.size() && (tokens.get(pos).type.equals("Plus") || tokens.get(pos).type.equals("Minus"))) {
-            if (tokens.get(pos).type.equals("Plus")) {
-                pos++;
-                        result += midExpression();
-            } else if (tokens.get(pos).type.equals("Minus")) {
-                pos++;
-                result -= midExpression();
-            }
-        }
-        return result;
-        }
-
-        private int  midExpression() throws SyntaxError {
-            int result = highExpression();
-            while (pos < tokens.size() && tokens.get(pos).type.equals("Multiplication")) {
-                pos++;
-                result *= highExpression();
-            } return result;
-    }
-
-
-        private int highExpression() throws SyntaxError {
-            int sign = 1;
-            while (tokens.get(pos).type.equals("Plus") || tokens.get(pos).type.equals("Minus")) {
-                if (tokens.get(pos).type.equals("Minus")) {
-                    sign *= -1;
-                }
-                pos++;
+            while (match.find()) { // Iterate over every match found in the input string.
+                if (match.group("Numbers") != null) { // If you iterate and find a match to our Numbers group, we'll add it as a Tokens object to the tokens list.
+                    String number = match.group("Numbers");
+                    if (number.startsWith("0") && number.length() > 1) {
+                        throw new SyntaxError("Invalid Number: " + number);
+                    }
+                    tokens.add(new Tokens("Number", number));
+                } else if (match.group("Identifiers") != null) {
+                    tokens.add(new Tokens("Identifiers", match.group("Identifiers")));
+                } else if (match.group("Assignment") != null) {
+                    tokens.add(new Tokens("Assignment", match.group("Assignment")));
+                } else if (match.group("Plus") != null) {
+                    tokens.add(new Tokens("Plus", match.group("Plus")));
+                } else if (match.group("Minus") != null) {
+                    tokens.add(new Tokens("Minus", match.group("Minus")));
+                } else if (match.group("Multiplication") != null) {
+                    tokens.add(new Tokens("Multiplication", match.group("Multiplication")));
+                } else if (match.group("LeftParanthesis") != null) {
+                    tokens.add(new Tokens("LeftParanthesis", match.group("LeftParanthesis")));
+                } else if (match.group("RightParanthesis") != null) {
+                    tokens.add(new Tokens("RightParanthesis", match.group("RightParanthesis")));
+                } else if (match.group("Semicolon") != null) {
+                    tokens.add(new Tokens("Semicolon", match.group("Semicolon")));
                 }
             }
+        }
+            // Going to make a Parser.
 
-        public void execute(String program) {
-            try {
-                // Clear state.
-                variables.clear();
-                initializedString.clear();
-                tokens.clear();
+            private void parse (String program) throws SyntaxError {
+                tokenize(program);
                 pos = 0;
-                parse(program);
-                for (String var : variables.keySet()) {
-                    System.out.println(var + " = " + variables.get(var));
+                while (pos < tokens.size()) {
+                    assignment();
                 }
-            }catch(SyntaxError e){
+            }
+
+            private void assignment () throws SyntaxError {
+                if (pos >= tokens.size() || !tokens.get(pos).type.equals("Identifiers")) {
+                    error("Expected identifier");
+                }
+                String varName = tokens.get(pos).value;
+                pos++;
+                if (pos >= tokens.size() || !tokens.get(pos).type.equals("Assignment")) {
+                    error("Expected '='");
+                }
+                pos++;
+                int value = lowExpression();
+                if (pos >= tokens.size() || !tokens.get(pos).type.equals("Semicolon")) {
+                    error("Expected ';'");
+                }
+                pos++;
+                variables.put(varName, value);
+                initializedString.add(varName);
+            }
+
+            private int lowExpression () throws SyntaxError
+            { // Handle the lowest precedence operations. So Adding and Subtracting.
+                int result = midExpression();
+                while (pos < tokens.size() && (tokens.get(pos).type.equals("Plus") || tokens.get(pos).type.equals("Minus"))) {
+                    if (tokens.get(pos).type.equals("Plus")) {
+                        pos++;
+                        result += midExpression();
+                    } else if (tokens.get(pos).type.equals("Minus")) {
+                        pos++;
+                        result -= midExpression();
+                    }
+                }
+                return result;
+            }
+
+            private int midExpression () throws SyntaxError {
+                int result = highExpression();
+                while (pos < tokens.size() && tokens.get(pos).type.equals("Multiplication")) {
+                    pos++;
+                    result *= highExpression();
+                }
+                return result;
+            }
+
+
+            private int highExpression () throws SyntaxError {
+                int sign = 1;
+                while (tokens.get(pos).type.equals("Plus") || tokens.get(pos).type.equals("Minus")) {
+                    if (tokens.get(pos).type.equals("Minus")) {
+                        sign *= -1;
+                    }
+                    pos++;
+                }
+                int result;
+                if (tokens.get(pos).type.equals("LeftParenthesis")) {
+                    pos++;
+                    result = midExpression();
+                    if (!tokens.get(pos).type.equals("RightParenthesis")) {
+                        error("Expected ')' ");
+                    }
+                    pos++;
+                } else if (tokens.get(pos).type.equals("Number")) {
+                    result = Integer.parseInt(tokens.get(pos).value);
+                    pos++;
+                } else if (tokens.get(pos).type.equals("Identifiers")) {
+                    String varName = tokens.get(pos).value;
+                    pos++;
+                    if (!initializedString.contains(varName)) {
+                        error("Uninitialized variable: " + varName);
+                    }
+                    result = variables.get(varName);
+                } else {
+                    error("Unexpected token");
+                    result = 0;
+                }
+                return result * sign;
+            }
+
+            public void execute (String program){
+                try {
+                    // Clear state.
+                    variables.clear();
+                    initializedString.clear();
+                    tokens.clear();
+                    pos = 0;
+                    parse(program);
+                    for (String var : variables.keySet()) {
+                        System.out.println(var + " = " + variables.get(var));
+                    }
+                } catch (SyntaxError e) {
                     System.err.println("Syntax Error: " + e.getMessage());
                 }
             }
-        private void error(String message) throws SyntaxError { // Helper method so we can throw syntax errors.
-            throw new SyntaxError(message);
-        }
-        private static class SyntaxError extends Exception {
-            public SyntaxError(String message) {
-                super(message);
+            private void error (String message) throws SyntaxError { // Helper method so we can throw syntax errors.
+                throw new SyntaxError(message);
+            }
+            private static class SyntaxError extends Exception {
+                public SyntaxError(String message) {
+                    super(message);
+                }
             }
         }
 
-
-}
